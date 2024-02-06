@@ -7,9 +7,11 @@ import com.hmdp.entity.UserInfo;
 import com.hmdp.service.IUserInfoService;
 import com.hmdp.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpRequest;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -20,7 +22,7 @@ import javax.servlet.http.HttpSession;
  * @author 虎哥
  * @since 2021-12-22
  */
-@Slf4j
+@CrossOrigin
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -36,8 +38,16 @@ public class UserController {
      */
     @PostMapping("code")
     public Result sendCode(@RequestParam("phone") String phone, HttpSession session) {
-        // TODO 发送短信验证码并保存验证码
-        return Result.fail("功能未完成");
+        System.out.println(phone);
+        System.out.println(session);
+        // 发送短信验证码并保存验证码
+        return userService.sendCode(phone, session);
+    }
+
+    @PostMapping("/test")
+    public Result test(HttpSession session) {
+        System.out.println("----" + session);
+        return Result.ok();
     }
 
     /**
@@ -46,8 +56,8 @@ public class UserController {
      */
     @PostMapping("/login")
     public Result login(@RequestBody LoginFormDTO loginForm, HttpSession session){
-        // TODO 实现登录功能
-        return Result.fail("功能未完成");
+
+        return userService.loginByRedis(loginForm, session);
     }
 
     /**

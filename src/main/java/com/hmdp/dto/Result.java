@@ -7,14 +7,23 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Result {
     private Boolean success;
     private String errorMsg;
     private Object data;
     private Long total;
 
+    Result() {
+
+    }
+
+    Result(Boolean success, String errorMsg, Object data, Long total) {
+        this.success = success;
+        this.errorMsg = errorMsg;
+        this.data = data;
+        this.total = total;
+
+    }
     public static Result ok(){
         return new Result(true, null, null, null);
     }

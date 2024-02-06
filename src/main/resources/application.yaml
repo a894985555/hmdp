@@ -1,14 +1,15 @@
 server:
-  port: 8081
+  port: 8082
 spring:
   application:
     name: hmdp
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/hmdp?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/hmdp?useSSL=false&serverTimezone=UTC&&allowPublicKeyRetrieval=true
     username: root
-    password: 555112
+    password: Acai123456
   redis:
+    database: 1
     host: 127.0.0.1
     port: 6379
     password:
@@ -19,9 +20,10 @@ spring:
         min-idle: 1
         time-between-eviction-runs: 10s
   jackson:
-    default-property-inclusion: non_null # JSON处理时忽略非空字段
+    time-zone: GMT+8
+
 mybatis-plus:
   type-aliases-package: com.hmdp.entity # 别名扫描包
+
 logging:
-  level:
-    com.hmdp: debug
+  config: classpath:logConfig/logback-test.xml
