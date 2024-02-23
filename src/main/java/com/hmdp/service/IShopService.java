@@ -13,6 +13,15 @@ import com.hmdp.entity.Shop;
  */
 public interface IShopService extends IService<Shop> {
 
-    Shop getShopById(Long id);
+    Shop getShopByIdUseCache(Long id);
+
+    Shop queryWithLogicalExpire(Long id);
+
+    Shop saveShopUseCache(Shop shop);
+
+    Shop updateShopUseCache(Shop shop);
+
+    Shop saveShop2Redis(Long id, Long expireSeconds);
+
 
 }

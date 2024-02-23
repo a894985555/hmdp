@@ -16,7 +16,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
                              Object handler) throws Exception {
 
-        System.out.println("login校验");
+//        System.out.println("login校验");
         // 1.判断是否需要拦截（ThreadLocal中是否有⽤户）
         if (UserHolder.getUser() == null) {
             // 没有，需要拦截，设置状态码
