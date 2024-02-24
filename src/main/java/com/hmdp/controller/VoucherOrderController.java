@@ -25,6 +25,12 @@ public class VoucherOrderController {
     IVoucherOrderService voucherOrderService;
     @PostMapping("seckill/{id}")
     public Result seckillVoucher(@PathVariable("id") Long voucherId) {
-        return voucherOrderService.seckillVoucher(voucherId);
+        try {
+            return voucherOrderService.seckillVoucher(voucherId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.fail(e.getMessage());
+        }
+
     }
 }

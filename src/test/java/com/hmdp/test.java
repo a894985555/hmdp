@@ -4,7 +4,10 @@ import com.hmdp.entity.RedisIdWorker;
 import com.hmdp.entity.Voucher;
 import com.hmdp.service.IShopService;
 import com.hmdp.service.IVoucherService;
+import io.lettuce.core.RedisClient;
 import org.junit.jupiter.api.Test;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -20,6 +23,7 @@ import java.util.Vector;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootTest
 public class test {
@@ -31,6 +35,9 @@ public class test {
 
     @Autowired
     RedisIdWorker redisIdWorker;
+
+    @Autowired
+    RedissonClient redissonClient;
 
     private static final ExecutorService es = Executors.newFixedThreadPool(10);
 
@@ -136,6 +143,23 @@ public class test {
         voucher.setBeginTime(LocalDateTime.now());
         voucher.setEndTime(LocalDateTime.now().plusHours(6));
         voucherService.addSeckillVoucher(voucher);
+    }
+
+    @Test
+    void testRedisson() throws Exception{
+        //获取锁(可重⼊)，指定锁的名称
+        RLock lock = redissonClient.getLock("anyLock");
+        //尝试获取锁，参数分别是：获取锁的最⼤等待时间(期间会重试)，锁⾃动释放时间，时间单位
+        boolean isLock = lock.tryLock(1,10, TimeUnit.SECONDS);
+        //判断获取锁成功
+        if(isLock) {
+            try {
+                System.out.println("执⾏业务");
+            } finally {
+                //释放锁
+                lock.unlock();
+            }
+        }
     }
 }
 

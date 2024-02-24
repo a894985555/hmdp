@@ -7,8 +7,11 @@ import com.hmdp.entity.*;
 import com.hmdp.mapper.VoucherOrderMapper;
 import com.hmdp.service.ISeckillVoucherService;
 import com.hmdp.service.IVoucherOrderService;
+import com.hmdp.utils.RedisConstants;
 import com.hmdp.utils.SimpleRedisLock;
 import com.hmdp.utils.UserHolder;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -17,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -35,10 +39,12 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     RedisIdWorker redisIdWorker;
     @Autowired
     StringRedisTemplate stringRedisTemplate;
+    @Autowired
+    RedissonClient redissonClient;
 
 
     @Override
-    public Result seckillVoucher(Long voucherId) {
+    public Result seckillVoucher(Long voucherId) throws InterruptedException {
         // 1.查询优惠券
         SeckillVoucher voucher = seckillVoucherService.getById(voucherId);
 
@@ -70,16 +76,32 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 //            return proxy.createVoucherOrder(voucherId);
 //        }
 
-        // 4.分布式锁写法,
-        SimpleRedisLock simpleRedisLock = new SimpleRedisLock("order:" + userId, stringRedisTemplate);
-        if (!simpleRedisLock.tryLock(10L)) {
+//        // 4.分布式锁写法,
+//        SimpleRedisLock simpleRedisLock = new SimpleRedisLock("order:" + userId, stringRedisTemplate);
+//        if (!simpleRedisLock.tryLock(10L)) {
+//            return Result.fail("不允许重复下单");
+//        }
+//        try {
+//            IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
+//            return proxy.createVoucherOrder(voucherId);
+//        } finally {
+//            simpleRedisLock.unlockByLua();
+//        }
+
+        // 5.使用redisson上锁
+        RLock rLock = redissonClient.getLock(RedisConstants.LOCK_ORDER_KEY + userId);
+
+        rLock.lock();
+        // 尝试获取锁，参数分别是：获取锁的最⼤等待时间(期间会重试)，锁⾃动释放时间，时间单位
+        boolean isLock = rLock.tryLock(1,10, TimeUnit.SECONDS);
+        if (!isLock) {
             return Result.fail("不允许重复下单");
         }
         try {
             IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
             return proxy.createVoucherOrder(voucherId);
         } finally {
-            simpleRedisLock.unlockByLua();
+            rLock.unlock();
         }
 
     }
