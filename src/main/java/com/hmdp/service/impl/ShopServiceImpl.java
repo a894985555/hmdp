@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IShopService {
 
-    @Resource
+    @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
     @Autowired
