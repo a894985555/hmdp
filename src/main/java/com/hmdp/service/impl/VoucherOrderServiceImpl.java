@@ -7,9 +7,11 @@ import com.hmdp.entity.*;
 import com.hmdp.mapper.VoucherOrderMapper;
 import com.hmdp.service.ISeckillVoucherService;
 import com.hmdp.service.IVoucherOrderService;
+import com.hmdp.utils.SimpleRedisLock;
 import com.hmdp.utils.UserHolder;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,8 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     ISeckillVoucherService seckillVoucherService;
     @Autowired
     RedisIdWorker redisIdWorker;
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
 
 
     @Override
@@ -52,7 +56,6 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
             return Result.fail("库存不足!");
         }
 
-        // 一人一单
         Long userId = UserHolder.getUser().getId();
 
         // 2.toString().intern()从常量池中获取字符串对象，保证获取的是同一个对象，因此会是是同一把锁
@@ -62,10 +65,23 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
 //        }
 
         // 3.正确写法，使用AOP代理使事务生效
-        synchronized (userId.toString().intern()) {
+//        synchronized (userId.toString().intern()) {
+//            IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
+//            return proxy.createVoucherOrder(voucherId);
+//        }
+
+        // 4.分布式锁写法,
+        SimpleRedisLock simpleRedisLock = new SimpleRedisLock("order:" + userId, stringRedisTemplate);
+        if (!simpleRedisLock.tryLock(10L)) {
+            return Result.fail("不允许重复下单");
+        }
+        try {
             IVoucherOrderService proxy = (IVoucherOrderService) AopContext.currentProxy();
             return proxy.createVoucherOrder(voucherId);
+        } finally {
+            simpleRedisLock.unlockByLua();
         }
+
     }
 
     // 1.如果直接在方法上添加synchronized悲观锁，颗粒度太大，性能低下
