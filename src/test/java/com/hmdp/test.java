@@ -50,6 +50,9 @@ public class test {
         prefix = prefix - suffix;
         System.out.println(Long.toBinaryString(suffix));
         System.out.println(Long.toBinaryString(prefix));
+
+        Long a = 1L;
+        System.out.println(a.doubleValue());
     }
 
     public static Integer get(int n) {
@@ -135,13 +138,13 @@ public class test {
         voucher.setShopId(1L);
         voucher.setTitle("150元代金券");
         voucher.setSubTitle("周一至周日均可使用");
-        voucher.setPayValue(10000L);
+        voucher.setPayValue(7500L);
         voucher.setActualValue(15000L);
         voucher.setType(1);
         voucher.setStatus(1);
         voucher.setStock(100);
         voucher.setBeginTime(LocalDateTime.now());
-        voucher.setEndTime(LocalDateTime.now().plusHours(6));
+        voucher.setEndTime(LocalDateTime.now().plusHours(8));
         voucherService.addSeckillVoucher(voucher);
     }
 
