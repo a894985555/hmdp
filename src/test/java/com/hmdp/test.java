@@ -56,14 +56,9 @@ public class test {
         prefix = prefix - suffix;
         System.out.println(Long.toBinaryString(suffix));
         System.out.println(Long.toBinaryString(prefix));
-
-        List<Integer> l = new ArrayList<>();
-        for (int i=1;i<100;i++) {
-            l.add(i);
-        }
-        l.stream().skip(7).forEach(result -> {
-            System.out.println(result);
-        });
+        Long i = Long.valueOf("1073742320");
+        LocalDateTime now = LocalDateTime.now();
+        System.out.println(Long.toBinaryString(i));
     }
 
     public static Integer get(int n) {
@@ -196,6 +191,21 @@ public class test {
                 shop.getY()), shop.getId().toString());
             }
         }
+    }
+
+    @Test
+    void testHyperLogLog() {
+        String[] users = new String[1000];
+        int index = 0;
+        for (int i=1;i<=100000000;i++) {
+            users[index++] = "user_" + i;
+            if (i%1000==0) {
+                index = 0;
+                stringRedisTemplate.opsForHyperLogLog().add("hll",users);
+            }
+        }
+        Long size = stringRedisTemplate.opsForHyperLogLog().size("hll");
+        System.out.println(size);
     }
 
 }
