@@ -1,29 +1,32 @@
 package com.hmdp;
 
 import com.hmdp.entity.RedisIdWorker;
+import com.hmdp.entity.Shop;
 import com.hmdp.entity.Voucher;
 import com.hmdp.service.IShopService;
 import com.hmdp.service.IVoucherService;
+import com.hmdp.utils.RedisConstants;
 import io.lettuce.core.RedisClient;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.geo.Point;
+import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @SpringBootTest
 public class test {
@@ -39,6 +42,9 @@ public class test {
     @Autowired
     RedissonClient redissonClient;
 
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
+
     private static final ExecutorService es = Executors.newFixedThreadPool(10);
 
     Object mutex = new Object();
@@ -51,8 +57,13 @@ public class test {
         System.out.println(Long.toBinaryString(suffix));
         System.out.println(Long.toBinaryString(prefix));
 
-        Long a = 1L;
-        System.out.println(a.doubleValue());
+        List<Integer> l = new ArrayList<>();
+        for (int i=1;i<100;i++) {
+            l.add(i);
+        }
+        l.stream().skip(7).forEach(result -> {
+            System.out.println(result);
+        });
     }
 
     public static Integer get(int n) {
@@ -164,6 +175,29 @@ public class test {
             }
         }
     }
+
+    @Test
+    void loadShopData() {
+        // 1.查询店铺信息
+        List<Shop> list = shopService.list();
+        // 2.把店铺分组，按照typeId分组，typeId⼀致的放到⼀个集合
+        Map<Long, List<Shop>> map =
+                list.stream().collect(Collectors.groupingBy(Shop::getTypeId));
+        // 3.分批完成写⼊Redis
+        for (Map.Entry<Long, List<Shop>> entry : map.entrySet()) {
+            // 3.1.获取类型id
+            Long typeId = entry.getKey();
+            String key = RedisConstants.SHOP_GEO_KEY + typeId;
+            // 3.2.获取同类型的店铺的集合
+            List<Shop> value = entry.getValue();
+            // 3.3.写⼊redis GEOADD key 经度 纬度 member
+            for (Shop shop : value) {
+                stringRedisTemplate.opsForGeo().add(key, new Point(shop.getX(),
+                shop.getY()), shop.getId().toString());
+            }
+        }
+    }
+
 }
 
 

@@ -161,6 +161,7 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
                 voucherId.toString(), userId.toString(), String.valueOf(orderId)
         );
         int r = result.intValue();
+
         // 2.判断结果是否为0
         if (r == 1) {
             return Result.fail("库存不足");
