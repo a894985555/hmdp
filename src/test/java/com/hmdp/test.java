@@ -1,15 +1,21 @@
 package com.hmdp;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.github.pagehelper.PageHelper;
 import com.hmdp.entity.RedisIdWorker;
 import com.hmdp.entity.Shop;
+import com.hmdp.entity.User;
 import com.hmdp.entity.Voucher;
+import com.hmdp.mapper.UserMapper;
 import com.hmdp.service.IShopService;
+import com.hmdp.service.IUserService;
 import com.hmdp.service.IVoucherService;
 import com.hmdp.utils.RedisConstants;
 import io.lettuce.core.RedisClient;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.geo.Point;
@@ -32,6 +38,8 @@ import java.util.stream.Collectors;
 public class test {
 
     @Autowired
+    IUserService userService;
+    @Autowired
     IShopService shopService;
     @Autowired
     IVoucherService voucherService;
@@ -45,9 +53,27 @@ public class test {
     @Autowired
     StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    UserMapper userMapper;
+
     private static final ExecutorService es = Executors.newFixedThreadPool(10);
 
     Object mutex = new Object();
+
+    @Test
+    public void test() {
+        User A = new User();
+        A.setNickName("zc");
+        A.setPhone("123");
+
+        User B = new User();
+        B.setNickName("zccc");
+        B.setPhone(null);
+
+        BeanUtils.copyProperties(B,A);
+        System.out.println(A);
+//        System.out.println(users);
+    }
 
     //编写一个main方法
     public static void main(String[] args) {

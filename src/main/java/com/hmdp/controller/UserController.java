@@ -7,6 +7,7 @@ import com.hmdp.dto.Result;
 import com.hmdp.dto.UserDTO;
 import com.hmdp.entity.User;
 import com.hmdp.entity.UserInfo;
+import com.hmdp.mapper.UserMapper;
 import com.hmdp.service.IUserInfoService;
 import com.hmdp.service.IUserService;
 import com.hmdp.utils.UserHolder;
@@ -35,6 +36,8 @@ public class UserController {
 
     @Autowired
     private IUserService userService;
+    @Autowired
+    private UserMapper userMapper;
 
     @Autowired
     private IUserInfoService userInfoService;
@@ -111,5 +114,10 @@ public class UserController {
     @PostMapping("/sign/count")
     public Result signCount(){
         return userService.signCount();
+    }
+
+    @GetMapping("/get")
+    public Result get() {
+        return Result.ok(userMapper.getUserList());
     }
 }

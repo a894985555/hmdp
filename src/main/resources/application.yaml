@@ -29,6 +29,13 @@ spring:
 
 mybatis-plus:
   type-aliases-package: com.hmdp.entity # 别名扫描包
+  configuration:
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
 
 logging:
   config: classpath:logConfig/logback-test.xml
+
+pagehelper:
+  propertyName: propertyValue
+  reasonable: false
+  defaultCount: true # 分页插件默认参数支持 default-count 形式，自定义扩展的参数，必须大小写一致

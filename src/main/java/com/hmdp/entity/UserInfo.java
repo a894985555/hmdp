@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 /**
  * <p>
- * 
+ *
  * </p>
  *
  * @author 虎哥
@@ -37,6 +37,7 @@ public class UserInfo implements Serializable {
      * 城市名称
      */
     private String city;
+
 
     /**
      * 个人介绍，不要超过128个字符
