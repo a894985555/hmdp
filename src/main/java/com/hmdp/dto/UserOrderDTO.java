@@ -3,9 +3,10 @@ package com.hmdp.dto;
 import lombok.Data;
 
 @Data
-public class UserDTO {
+public class UserOrderDTO {
     private Long id;
     private String nickName;
     private String icon;
-    private String test;
+    private Long voucherId;
+    private Long orderId;
 }

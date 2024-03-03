@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
 import static com.hmdp.utils.RedisConstants.*;
 
@@ -125,11 +126,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String token = UUID.randomUUID().toString();
         // 7.2.将User对象转为HashMap存储
         UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
+        System.out.println(userDTO);
         Map<String, Object> userMap = BeanUtil.beanToMap(userDTO, new HashMap<>(),
                 CopyOptions.create()
                         .setIgnoreNullValue(true)
-                        .setFieldValueEditor((fieldName, fieldValue) ->
-                                fieldValue.toString()));
+                        .setFieldValueEditor((fieldName, fieldValue) -> {
+                                    if (fieldValue != null) {
+                                        return fieldValue.toString();
+                                    }
+                                return "";
+                        }));
 
         // 7.3.存储
         String tokenKey = LOGIN_USER_KEY + token;

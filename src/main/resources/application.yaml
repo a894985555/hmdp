@@ -24,6 +24,15 @@ spring:
         max-idle: 10
         min-idle: 1
         time-between-eviction-runs: 10s
+  rabbitmq:
+    host: localhost # 你的虚拟机IP
+    port: 5672 # 端⼝
+    virtual-host: /hmall # 虚拟主机
+    username: hmall # ⽤户名
+    password: 123456 # 密码
+    listener:
+      simple:
+        prefetch: 1 # 每次只能获取⼀条消息，处理完成才能获取下⼀个消息
   jackson:
     time-zone: GMT+8
 

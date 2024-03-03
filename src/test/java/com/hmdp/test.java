@@ -15,6 +15,7 @@ import io.lettuce.core.RedisClient;
 import org.junit.jupiter.api.Test;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,6 +56,8 @@ public class test {
 
     @Autowired
     UserMapper userMapper;
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     private static final ExecutorService es = Executors.newFixedThreadPool(10);
 
@@ -168,10 +171,10 @@ public class test {
     void insertSeckill() {
         Voucher voucher = new Voucher();
         voucher.setShopId(1L);
-        voucher.setTitle("150元代金券");
+        voucher.setTitle("1000元代金券");
         voucher.setSubTitle("周一至周日均可使用");
-        voucher.setPayValue(7500L);
-        voucher.setActualValue(15000L);
+        voucher.setPayValue(50000L);
+        voucher.setActualValue(100000L);
         voucher.setType(1);
         voucher.setStatus(1);
         voucher.setStock(100);
@@ -234,6 +237,46 @@ public class test {
         System.out.println(size);
     }
 
+    @Test
+    public void testSimpleQueue() {
+        // 队列名称
+        String queueName = "simple.queue";// 消息
+        String message = "hello, spring amqp123!";// 发送消息
+        rabbitTemplate.convertAndSend(queueName, message);
+    }
+
+
+    /**
+     * workQueue
+     * 向队列中不停发送消息，模拟消息堆积。
+     */
+    @Test
+    public void testWorkQueue() throws InterruptedException {
+        // 队列名称
+        String queueName = "work.queue";// 消息
+        String message = "hello, message_";
+
+        for (int i = 0; i < 50; i++) {
+
+            // 发送消息，每20毫秒发送⼀次，相当于每秒发送50条消息
+            rabbitTemplate.convertAndSend(queueName, message + i);
+            Thread.sleep(20);
+        }
+    }
+
+    @Test
+    public void testSendMap() throws InterruptedException {
+        // 准备消息
+        Map<String,Object> msg = new HashMap<>();
+        msg.put("name", "柳岩");
+        msg.put("age", 21);
+        User user = new User();
+        user.setPhone("123456");
+        user.setNickName("zc");
+
+        // 发送消息
+        rabbitTemplate.convertAndSend("object.fanout","", user);
+    }
 }
 
 
